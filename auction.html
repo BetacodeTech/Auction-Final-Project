@@ -58,7 +58,7 @@
     <script>
       let web3;
       // get contract address and ABI from remix.io
-      const contractAddress = "0xd9145CCE52D386f254917e481eB44e9943F39138"; // Replace with your deployed contract address
+      const contractAddress = "0x51b515145103dc7bb04FB877E352C2710d69F7d1"; // Replace with your deployed contract address
       const contractABI = [
         {
           inputs: [
@@ -301,9 +301,7 @@
         let highestBidder = 0;
         try {
           highestBidder = await auction.methods.highestBidder().call();
-          debugger
         } catch (error) {
-          debugger
           displayError(error);
         }
 
