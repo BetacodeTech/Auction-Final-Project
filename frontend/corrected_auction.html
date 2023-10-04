@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>MyAuction Interface</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.3.4/dist/web3.min.js"></script>
+    <style>
+      /* Simple styling for clarity */
+      label {
+        margin-right: 10px;
+      }
+      div {
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>MyAuction</h2>
+    <button onclick="connectMetamask()">Connect to MetaMask</button>
+    <div id="error" style="color: red"></div>
+    <div>
+      <label for="abi">Smart Contract ABI:</label>
+      <textarea cols="50" id="abi" rows="4"></textarea>
+    </div>
+    <div>
+      <label for="contractAddress">Smart Contract Address:</label>
+      <input id="contractAddress" type="text" />
+    </div>
+    <div id="loader" style="display: none">
+      <p>Loading...</p>
+    </div>
+
+    <div id="auctionUI" style="display: none">
+      <!-- Display current highest bid and bidder -->
+      <div>
+        <strong>Highest Bidder:</strong>
+        <span id="highestBidder">Loading...</span>
+        <button onclick="fetchHighestBidder()">Refresh</button>
+        <br />
+        <strong>Highest Bid:</strong>
+        <span id="highestBid">Loading...</span> ETH
+        <button onclick="fetchHighestBid()">Refresh</button>
+      </div>
+      <!-- Place a bid -->
+      <div>
+        <h3>Place a Bid</h3>
+        <label for="bidAmount">Bid Amount (in ETH):</label>
+        <input id="bidAmount" type="text" />
+        <button onclick="placeBid()">Place Bid</button>
+      </div>
+      <!-- Withdraw a bid -->
+      <div>
+        <h3>Withdraw Bid</h3>
+        <button onclick="withdrawBid()">Withdraw Your Bid</button>
+      </div>
+      <!-- End the auction -->
+      <div>
+        <h3>End Auction (Only Beneficiary)</h3>
+        <button onclick="endAuction()">End Auction</button>
+      </div>
+    </div>
+
+    <script>
+      let web3;
+      // get contract address and ABI from remix.io
+      const contractABI = [];
+
+      // get contract address and ABI from remix.io
+      // Replace with your deployed contract address
+      // Replace with ABI of your contract
+
+      async function connectMetamask() {
+        if (typeof window.ethereum !== "undefined") {
+          web3 = new Web3(window.ethereum);
+          try {
+            await window.ethereum.request({ method: "eth_requestAccounts" });
+            initAuctionInterface();
+          } catch (error) {
+            document.getElementById("error").innerText =
+              "Error connecting to MetaMask.";
+          }
+        } else {
+          document.getElementById("error").innerText =
+            "Please install MetaMask to use this interface.";
+        }
+      }
+
+      function initAuctionInterface() {
+        document.getElementById("auctionUI").style.display = "block";
+        // Load initial data
+        refreshData();
+      }
+
+      async function refreshData() {
+        const auction = new web3.eth.Contract(contractABI, contractAddress);
+        const highestBid = await auction.methods.highestBid().call();
+        const highestBidder = await auction.methods.highestBidder().call();
+
+        document.getElementById("highestBid").innerText = web3.utils.fromWei(
+          highestBid,
+          "ether"
+        );
+        document.getElementById("highestBidder").innerText = highestBidder;
+      }
+      function displayError(error) {
+        document.getElementById("error").innerText = "Error: " + error.message;
+      }
+
+      async function placeBid() {
+        const bidAmount = document.getElementById("bidAmount").value;
+        const accounts = await web3.eth.getAccounts();
+
+        const auction = new web3.eth.Contract(contractABI, contractAddress);
+        auction.methods
+          .bid()
+          .send({
+            from: accounts[0],
+            value: web3.utils.toWei(bidAmount, "ether"),
+          })
+          .then(refreshData)
+          .catch((error) => displayError(error));
+      }
+
+      async function withdrawBid() {
+        const accounts = await web3.eth.getAccounts();
+
+        const auction = new web3.eth.Contract(contractABI, contractAddress);
+        auction.methods
+          .withdraw()
+          .send({ from: accounts[0] })
+          .then(refreshData)
+          .catch((error) => displayError(error));
+      }
+
+      async function endAuction() {
+        const accounts = await web3.eth.getAccounts();
+
+        const auction = new web3.eth.Contract(contractABI, contractAddress);
+        auction.methods
+          .auctionEnd()
+          .send({ from: accounts[0] })
+          .then(refreshData)
+          .catch((error) => displayError(error));
+      }
+
+      async function fetchHighestBidder() {
+        const auction = new web3.eth.Contract(contractABI, contractAddress);
+
+        let highestBidder = 0;
+        try {
+          highestBidder = await auction.methods.highestBidder().call();
+        } catch (error) {
+          displayError(error);
+        }
+
+        document.getElementById("highestBidder").innerText = highestBidder;
+      }
+
+      async function fetchHighestBid() {
+        const auction = new web3.eth.Contract(contractABI, contractAddress);
+        const highestBid = await auction.methods
+          .highestBid()
+          .call()
+          .catch((error) => displayError(error));
+        document.getElementById("highestBid").innerText = web3.utils.fromWei(
+          highestBid,
+          "ether"
+        );
+      }
+    </script>
+    <script>
+      let contract;
+
+      const abi = document.getElementById("abi").value;
+      const contractAddress = document.getElementById("contractAddress").value;
+
+      async function connectMetamask() {
+        if (typeof window.ethereum !== "undefined") {
+          window.web3 = new Web3(window.ethereum);
+          try {
+            accounts = await window.ethereum.request({
+              method: "eth_requestAccounts",
+            });
+            contract = new web3.eth.Contract(JSON.parse(abi), contractAddress);
+            document.getElementById("auctionUI").style.display = "block";
+          } catch (error) {
+            document.getElementById("error").innerText =
+              "Error connecting to MetaMask: " + error.message;
+          }
+        } else {
+          document.getElementById("error").innerText =
+            "MetaMask is not installed!";
+        }
+      }
+
+      function showLoader() {
+        document.getElementById("loader").style.display = "block";
+      }
+
+      function hideLoader() {
+        document.getElementById("loader").style.display = "none";
+      }
+
+      // Existing functions to be updated with loader and error messages
+
+      async function fetchHighestBidder() {
+        showLoader();
+        try {
+          const highestBidder = await contract.methods.highestBidder().call();
+          document.getElementById("highestBidder").innerText = highestBidder;
+          hideLoader();
+        } catch (error) {
+          document.getElementById("error").innerText =
+            "Error fetching highest bidder: " + error.message;
+          hideLoader();
+        }
+      }
+
+      async function fetchHighestBid() {
+        showLoader();
+        try {
+          const highestBid = await contract.methods.highestBid().call();
+          document.getElementById("highestBid").innerText = web3.utils.fromWei(
+            highestBid,
+            "ether"
+          );
+          hideLoader();
+        } catch (error) {
+          document.getElementById("error").innerText =
+            "Error fetching highest bid: " + error.message;
+          hideLoader();
+        }
+      }
+
+      // Continue with other functions similarly...
+    </script>
+  </body>
+</html>
