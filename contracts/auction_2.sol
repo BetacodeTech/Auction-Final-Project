@@ -17,6 +17,7 @@ contract MyAuction {
         articleName = _articleName;
         articleImageUrl = _articleImageUrl;
         articleDescription = _articleDescription;
+        auctionOwner = msg.sender;
     }
 
     /// modifiers
