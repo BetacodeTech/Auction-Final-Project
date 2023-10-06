@@ -3,15 +3,15 @@ pragma solidity ^0.8.0;
 
 contract HelloWorld {
     string public message;
-    address auctionOwner;
+    address contractOwner;
 
     constructor(string memory _initialMessage) {
         message = _initialMessage;
-        auctionOwner = msg.sender;
+        contractOwner = msg.sender;
     }
 
     modifier onlyOwner() {
-        require(msg.sender == auctionOwner, "You are not the owner of this world !!");
+        require(msg.sender == contractOwner, "You are not the owner of this world !!");
         _;
     }
 

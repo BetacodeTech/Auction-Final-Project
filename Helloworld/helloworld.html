@@ -1,181 +1,93 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HelloWorld Interface</title>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.3.4/dist/web3.min.js"></script>
-    <style>
-      /* Simple styling for clarity */
-      label {
-        margin-right: 10px;
-      }
-      div {
-        margin-bottom: 20px;
-      }
-    </style>
   </head>
 
   <body>
-    <h2>Hello World Blockchain Example</h2>
+    <h1>Hello World Blockchain</h1>
+    <button onclick="connectToMetamask();">Conectar com Metamask</button>
+    <p id="account">Loading address ...</p>
+    <p id="balance">Loading balance...</p>
 
-    <button onclick="connectMetamask()">Connect to MetaMask</button>
-    <div id="error" style="color: red"></div>
-
-    <div id="helloworldUI" style="display: none">
-      <!-- Display current message -->
-      <div>
-        <strong>Message:</strong>
-        <span id="message">Loading...</span>
-        <button onclick="fetchMessage()">Refresh</button>
-        <br />
-      </div>
-
-      <!-- Change message -->
-      <div>
-        <h3>Set Message</h3>
-        <label for="newMessage">New message:</label>
-        <input type="text" id="newMessage" />
-        <button onclick="setMessage()">Set Message</button>
-      </div>
-
-
-    <script>
-      let web3;
-      // get contract address and ABI from remix.io
-      const contractAddress = "0xA2dD8C22fA55eacfbDaEbAD9c8ec5B0288D91d2F"; // Replace with your deployed contract address
-      const contractABI = [
-        {
-          inputs: [
-            {
-              internalType: "string",
-              name: "_newMessage",
-              type: "string",
-            },
-          ],
-          name: "setMessage",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [
-            {
-              internalType: "string",
-              name: "_initialMessage",
-              type: "string",
-            },
-          ],
-          stateMutability: "nonpayable",
-          type: "constructor",
-        },
-        {
-          inputs: [],
-          name: "message",
-          outputs: [
-            {
-              internalType: "string",
-              name: "",
-              type: "string",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-      ];
-
-      async function connectMetamask() {
-        if (typeof window.ethereum !== "undefined") {
-          web3 = new Web3(window.ethereum);
-          try {
-            await window.ethereum.request({ method: "eth_requestAccounts" });
-            initHelloWorldInterface();
-          } catch (error) {
-            document.getElementById("error").innerText =
-              "Error connecting to MetaMask.";
-          }
-        } else {
-          document.getElementById("error").innerText =
-            "Please install MetaMask to use this interface.";
-        }
-      }
-
-      function initHelloWorldInterface() {
-        document.getElementById("helloworldUI").style.display = "block";
-        // Load initial data
-        refreshData();
-      }
-
-      async function refreshData() {
-        const auction = new web3.eth.Contract(contractABI, contractAddress);
-        const message = await auction.methods.message().call();
-        // const highestBidder = await auction.methods.highestBidder().call();
-
-        document.getElementById("message").innerText = message;
-        // document.getElementById("highestBidder").innerText = highestBidder;
-      }
-      function displayError(error) {
-        document.getElementById("error").innerText = "Error: " + error.message;
-      }
-
-      async function setMessage() {
-        const newMessage = document.getElementById("newMessage").value;
-        const accounts = await web3.eth.getAccounts();
-
-        const auction = new web3.eth.Contract(contractABI, contractAddress);
-        auction.methods
-          .setMessage(newMessage)
-          .send({            from: accounts[0] })
-          .then(refreshData)
-          .catch((error) => displayError(error));
-      }
-
-      // async function withdrawBid() {
-      //   const accounts = await web3.eth.getAccounts();
-
-      //   const auction = new web3.eth.Contract(contractABI, contractAddress);
-      //   auction.methods
-      //     .withdraw()
-      //     .send({ from: accounts[0] })
-      //     .then(refreshData)
-      //     .catch((error) => displayError(error));
-      // }
-
-      // async function endAuction() {
-      //   const accounts = await web3.eth.getAccounts();
-
-      //   const auction = new web3.eth.Contract(contractABI, contractAddress);
-      //   auction.methods
-      //     .auctionEnd()
-      //     .send({ from: accounts[0] })
-      //     .then(refreshData)
-      //     .catch((error) => displayError(error));
-      // }
-
-      async function fetchMessage() {
-        const auction = new web3.eth.Contract(contractABI, contractAddress);
-
-        let message = '';
-        try {
-          message = await auction.methods.message().call();
-        } catch (error) {
-          displayError(error);
-        }
-
-        document.getElementById("message").innerText = message;
-      }
-
-      // async function fetchHighestBid() {
-      //   const auction = new web3.eth.Contract(contractABI, contractAddress);
-      //   const highestBid = await auction.methods
-      //     .highestBid()
-      //     .call()
-      //     .catch((error) => displayError(error));
-      //   document.getElementById("highestBid").innerText = web3.utils.fromWei(
-      //     highestBid,
-      //     "ether"
-      //   );
-      // }
-    </script>
+    <h1>Smart Contract</h1>
+    <h2>Mensagem</h2>
+    <p id="message">loading message...</p>
+    <button onClick="getMessage();">Atualizar mensagem</button>
+    <h2>Nova mensagem</h2>
+    <input type="text" id="newMessage" />
+    <button onClick="setMessage();">Enviar</button>
   </body>
+
+  <script>
+    let web3;
+    const contractAddress = "0xAae688264f06295408a045984603D37ab501B3aB";
+    const contractABI = [
+      {
+        inputs: [
+          {
+            internalType: "string",
+            name: "_newMessage",
+            type: "string",
+          },
+        ],
+        name: "setMessage",
+        outputs: [],
+        stateMutability: "nonpayable",
+        type: "function",
+      },
+      {
+        inputs: [
+          {
+            internalType: "string",
+            name: "_initialMessage",
+            type: "string",
+          },
+        ],
+        stateMutability: "nonpayable",
+        type: "constructor",
+      },
+      {
+        inputs: [],
+        name: "message",
+        outputs: [
+          {
+            internalType: "string",
+            name: "",
+            type: "string",
+          },
+        ],
+        stateMutability: "view",
+        type: "function",
+      },
+    ];
+
+    async function connectToMetamask() {
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+
+      document.getElementById("account").innerText = accounts[0];
+      web3 = new Web3(window.ethereum);
+
+      // balance is optional
+      let balance = await web3.eth.getBalance(accounts[0]);
+      balance = web3.utils.fromWei(balance, "ether");
+      document.getElementById("balance").innerText = balance;
+    }
+
+    async function getMessage() {
+      const auction = new web3.eth.Contract(contractABI, contractAddress);
+      const message = await auction.methods.message().call();
+      document.getElementById("message").innerText = message;
+    }
+
+    async function setMessage() {
+      const newMessage = document.getElementById("newMessage").value;
+      const account = document.getElementById("account").innerText;
+
+      const contract = new web3.eth.Contract(contractABI, contractAddress);
+      await contract.methods.setMessage(newMessage).send({ from: account });
+      getMessage();
+    }
+  </script>
 </html>
