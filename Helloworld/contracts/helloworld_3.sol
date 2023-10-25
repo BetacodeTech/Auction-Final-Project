@@ -6,7 +6,7 @@ contract HelloWorld {
     string public message;
     address auctionOwner;
     uint256 public amount;
-    address payable public sender;
+    address public sender;
 
     constructor(string memory _initialMessage) {
         message = _initialMessage;
@@ -19,18 +19,26 @@ contract HelloWorld {
     }
 
     function pay() public payable {
+        require(msg.value > 0, "Value must be more than 0");
+        require(msg.value > amount, "Value must be above the stored amount");
+
         if (amount > 0) {
-            sender.transfer(amount);
+            // transfer amount from the contract's balance to the previous sender
+            payable(sender).transfer(amount);
         }
+
+        // Store new values
         amount = msg.value;
-        sender = payable(msg.sender);
+        sender = msg.sender;
     }
 
-    // Example without the usage of a public internal variable
-    function payBack() public payable {
-        address convertedAddress = address(this);
-        uint256 contractBalance = convertedAddress.balance;
-        sender.transfer(contractBalance);
+    function payOwner() public payable onlyOwner {
+        address contractAddress = address(this);
+        uint256 contractBalance = contractAddress.balance;
+        require(contractBalance > 0, "Balance is 0");
+        payable(auctionOwner).transfer(contractBalance);
+        // Reset value since we now transfered the whole balance
+        amount = 0;
     }
 
     function setMessage(string memory _newMessage) public onlyOwner {
