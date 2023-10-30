@@ -7,15 +7,14 @@ contract MyAuction {
     string public articleDescription;
     bool public auctionEnded;
 
-    address auctionOwner;
+    address public auctionOwner;
 
     uint256 public highestBid;
     address payable public highestBidder;
 
     //events
     event HighestBidIncreased(address sender, uint256 amount);
-    event PreviousBidRefunded(address previousSender, uint256 previousAmount);
-    event AuctionEnded(address winner, uint256 finalBid);
+    event AuctionEnded(address winner, uint256 winningBid);
 
     // Adding an underscore at the beguining of a variable name that is used as a parameter is a common practice.
     // This is done to avoid changing the incoming values.
@@ -56,7 +55,6 @@ contract MyAuction {
 
         if (highestBid != 0) {
             highestBidder.transfer(highestBid); // Refund the previously highest bidder
-            emit PreviousBidRefunded(highestBidder, highestBid);
         }
 
         highestBid = msg.value;
@@ -64,7 +62,7 @@ contract MyAuction {
         emit HighestBidIncreased(highestBidder, highestBid);
     }
 
-    function payOwner() public payable onlyOwner auctionNotEnded {
+    function endAuction() public payable onlyOwner auctionNotEnded {
         // get contract balance
         address contractAddress = address(this);
         uint256 contractBalance = contractAddress.balance;
