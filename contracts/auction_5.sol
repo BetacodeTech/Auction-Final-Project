@@ -12,7 +12,9 @@ contract MyAuction {
     address payable public highestBidder;
 
     //events
-    event HighestBidIncreased(address sender, uint256 amount);
+    event HighestBidIncreased(address newSender, uint256 newAmount);
+    event PreviousBidRefunded(address previousSender, uint256 previousAmount);
+    event AuctionEnded(address winner, uint256 finalBid);
 
     // Adding an underscore at the beguining of a variable name that is used as a parameter is a common practice.
     // This is done to avoid changing the incoming values.
@@ -35,10 +37,9 @@ contract MyAuction {
 
     /// Methods
     // Change the article description
-    function setArticleDescription(string memory _newArticleDescription)
-        public
-        onlyOwner
-    {
+    function setArticleDescription(
+        string memory _newArticleDescription
+    ) public onlyOwner {
         articleDescription = _newArticleDescription;
     }
 
@@ -49,6 +50,7 @@ contract MyAuction {
 
         if (highestBid != 0) {
             highestBidder.transfer(highestBid); // Refund the previously highest bidder
+            emit PreviousBidRefunded(highestBidder, highestBid);
         }
 
         highestBid = msg.value;
@@ -61,5 +63,6 @@ contract MyAuction {
         uint256 contractBalance = contractAddress.balance;
         require(contractBalance > 0, "Balance is 0");
         payable(auctionOwner).transfer(contractBalance);
+        emit AuctionEnded(highestBidder, highestBid);
     }
 }

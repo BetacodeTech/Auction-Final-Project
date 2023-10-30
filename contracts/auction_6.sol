@@ -14,7 +14,8 @@ contract MyAuction {
 
     //events
     event HighestBidIncreased(address sender, uint256 amount);
-    event AuctionEnded(address winner, uint256 winningBid);
+    event PreviousBidRefunded(address previousSender, uint256 previousAmount);
+    event AuctionEnded(address winner, uint256 finalBid);
 
     // Adding an underscore at the beguining of a variable name that is used as a parameter is a common practice.
     // This is done to avoid changing the incoming values.
@@ -55,6 +56,7 @@ contract MyAuction {
 
         if (highestBid != 0) {
             highestBidder.transfer(highestBid); // Refund the previously highest bidder
+            emit PreviousBidRefunded(highestBidder, highestBid);
         }
 
         highestBid = msg.value;
